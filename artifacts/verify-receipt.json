@@ -1,0 +1,19 @@
+{
+  "kind": "typed-receipt",
+  "surface": "api",
+  "endpoint": "http://127.0.0.1:8888 (gateway)",
+  "result": "verify-all 7/7 GREEN exit 0",
+  "gates": [
+    "health",
+    "banks",
+    "roundtrip",
+    "isolation+attribution",
+    "adversarial",
+    "contract-drift",
+    "restore"
+  ],
+  "exitCode": 0,
+  "hindsightVersion": "0.8.3",
+  "profile": "cpu-en (offline, LLM=none)",
+  "capturedAt": "live"
+}
