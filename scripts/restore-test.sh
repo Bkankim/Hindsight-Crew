@@ -22,8 +22,8 @@ docker run --rm -v "$RV":/data -v "$ROOT/$(dirname "$F")":/b alpine sh -c "tar x
 HFARG=""; [ -n "$HF" ] && HFARG="-v $HF:/home/hindsight/.cache/huggingface"
 docker run -d --name "$RC" \
   -e HINDSIGHT_API_MCP_AUTH_TOKEN="$KEY" -e HINDSIGHT_API_LLM_PROVIDER=none \
-  -e HINDSIGHT_API_EMBEDDINGS_MODEL="${HINDSIGHT_API_EMBEDDINGS_MODEL:-BAAI/bge-m3}" \
-  -e HINDSIGHT_API_RERANKER_MODEL="${HINDSIGHT_API_RERANKER_MODEL:-dragonkue/bge-reranker-v2-m3-ko}" \
+  -e HINDSIGHT_API_EMBEDDINGS_LOCAL_MODEL="${HINDSIGHT_API_EMBEDDINGS_LOCAL_MODEL:-BAAI/bge-m3}" \
+  -e HINDSIGHT_API_RERANKER_LOCAL_MODEL="${HINDSIGHT_API_RERANKER_LOCAL_MODEL:-BAAI/bge-reranker-v2-m3}" \
   -v "$RV":/home/hindsight/.pg0 $HFARG -p 127.0.0.1:$PORT:8888 "$IMG" >/dev/null || { echo "restore boot failed"; exit 1; }
 ok=0
 for i in $(seq 1 50); do

@@ -17,9 +17,12 @@ services:
       HINDSIGHT_API_LLM_PROVIDER: ${HINDSIGHT_API_LLM_PROVIDER:-none}
       # Embeddings + reranker from the selected profile (local provider on cpu-en).
       HINDSIGHT_API_EMBEDDINGS_PROVIDER: ${HINDSIGHT_API_EMBEDDINGS_PROVIDER:-local}
-      HINDSIGHT_API_EMBEDDINGS_MODEL: ${HINDSIGHT_API_EMBEDDINGS_MODEL:-BAAI/bge-m3}
+      HINDSIGHT_API_EMBEDDINGS_LOCAL_MODEL: ${HINDSIGHT_API_EMBEDDINGS_LOCAL_MODEL:-BAAI/bge-m3}
       HINDSIGHT_API_RERANKER_PROVIDER: ${HINDSIGHT_API_RERANKER_PROVIDER:-local}
-      HINDSIGHT_API_RERANKER_MODEL: ${HINDSIGHT_API_RERANKER_MODEL:-dragonkue/bge-reranker-v2-m3-ko}
+      HINDSIGHT_API_RERANKER_LOCAL_MODEL: ${HINDSIGHT_API_RERANKER_LOCAL_MODEL:-BAAI/bge-reranker-v2-m3}
+      # reranker is hot-swappable (cross-encoder, no stored vectors) — no reindex to change it.
+      # 568M cross-encoder on CPU: cap concurrency to 1 initially, raise to 2 once stable.
+      HINDSIGHT_API_RERANKER_LOCAL_MAX_CONCURRENT: ${HINDSIGHT_API_RERANKER_LOCAL_MAX_CONCURRENT:-1}
     expose: ["8888"]               # internal only — NOT published to host
     volumes:
       - pg0:/home/hindsight/.pg0   # embedded Postgres data (named volume, UID-1000 safe)
