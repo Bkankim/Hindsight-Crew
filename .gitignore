@@ -1,0 +1,23 @@
+# Secrets & per-deployment config (NEVER commit)
+.env.local
+.env.*.local
+secrets/
+*.key
+*.pem
+# Backups & DR artifacts
+backups/
+*.tar
+*.tar.gz
+*.dump
+*.sql
+# Audit logs (may contain token fingerprints; keep out of git)
+audit*.log
+audit/
+# Probe / verify runtime artifacts
+fixtures/contract-probe.out.json
+verify/.last-run/
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
