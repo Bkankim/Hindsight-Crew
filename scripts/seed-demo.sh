@@ -11,18 +11,16 @@ rand() { openssl rand -hex "${1:-24}"; }   # CSPRNG
 
 if [ ! -f .env.local ]; then
   KEY="hs_$(rand 24)"
-  PGP="$(rand 16)"
   PROFILE="${HC_PROFILE:-cpu-en}"
   {
     echo "# AUTO-SEEDED by seed-demo.sh — DO NOT COMMIT (gitignored)"
     echo "HC_PROFILE=$PROFILE"
     echo "HC_HINDSIGHT_API_KEY=$KEY"
-    echo "HC_PG_PASSWORD=$PGP"
     echo "HC_GATEWAY_BIND=127.0.0.1:8888"
     echo "HC_ATTRIBUTION_MODE=body-inject"
     # default to floating tags until digests are resolved (bootstrap can pin)
+    # demo default = floating tag; pin @sha256 in .env.local for reproducible/non-demo use
     echo "HC_HINDSIGHT_IMAGE=ghcr.io/vectorize-io/hindsight:latest"
-    echo "HC_POSTGRES_IMAGE=postgres:16-alpine"
   } > .env.local
   # merge selected profile model vars
   if [ -f "profiles/$PROFILE.env" ]; then

@@ -4,7 +4,8 @@ Clients POST JSON-RPC to /mcp/<bank>/ with their member token (Bearer). The gate
   1. resolves the principal from the ACL (never trusts client bank hints),
   2. decides per JSON-RPC element (batch-aware) deny-by-default — any deny → 403 whole request,
   3. only on allow: sanitizes the body (strip client bank, stamp team-retain attribution),
-  4. forwards with header allowlist + injected upstream Bearer key to /mcp/<bank>/,
+  4. forwards with header allowlist + injected upstream key (MCP: POST /mcp + authoritative
+     X-Bank-Id header; REST: bank in the /v1/{tenant}/banks/{bank} path),
   5. streams the response back (SSE/streamable HTTP passthrough),
   6. audits every decision (token fingerprint, attempted vs resolved bank, allow/deny+reason).
 
@@ -173,9 +174,12 @@ def create_app(
             return deny("bad-bank-format")
         if bank not in principal.allowed_banks():
             return deny(f"bank-not-in-acl:{bank}")
-        # destructive bank delete only on the owner's personal bank
-        if request.method == "DELETE" and rest == "" and bank != principal.personal:
-            return deny("destructive-delete-on-nonpersonal")
+        # Destructive ops (DELETE any sub-resource = delete_bank/delete_document/clear;
+        # PATCH = update_bank-style mutation) are owner-only — never on a shared team bank.
+        # Mirrors MCP DESTRUCTIVE_TOOLS so the two surfaces agree (THREAT-MODEL #4).
+        # Members may still GET (recall) and POST (retain) on team banks.
+        if request.method in ("DELETE", "PATCH") and bank != principal.personal:
+            return deny(f"destructive-on-nonpersonal:{request.method}")
 
         body = await request.body()
         # team-retain attribution: stamp member identity into each item's metadata (overwrite)

@@ -11,7 +11,7 @@ Hindsight's built-in auth is a **single shared Bearer key** and resolves the tar
 1. Holds the upstream Hindsight key; **clients never receive it**.
 2. Resolves the bank **only** from the token→ACL mapping; ignores/strips/overwrites client URL bank, `X-Bank-Id`, and body `arguments.bank`.
 3. Denies by default: a call passes only if `(method, tool_name, target_bank)` matches the token's ACL; everything else is `403`.
-4. Blocks the root multi-bank `/mcp/` (enumeration) and whitelists destructive tools to the owner's bank only.
+4. Blocks the root multi-bank `/mcp/` (enumeration) and restricts destructive ops to the owner's personal bank on BOTH surfaces: MCP destructive tools (`delete_bank`/`clear_memories`/`delete_document`/`update_bank`) and REST `DELETE`/`PATCH` are denied on shared team banks. Members may still retain/recall on team banks.
 5. Overwrites the team-retain attribution field with the token's identity (members cannot forge attribution).
 
 ## Residual risks (accepted in v1)
