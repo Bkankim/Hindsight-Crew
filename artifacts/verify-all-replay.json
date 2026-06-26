@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": false,
+  "replayExempt": {
+    "reasonCode": "requires_network",
+    "reason": "verify-all drives the live dockerized Hindsight stack over HTTP (non-deterministic ids, requires the running stack); replay-safe pure invocation not possible.",
+    "approvedBy": "ultragoal-leader (0-Main)",
+    "fallbackArtifactRefs": [
+      "verify-all.out"
+    ]
+  },
+  "command": [
+    "bash",
+    "verify/verify-all.sh"
+  ],
+  "recordedStdout": "  summary: 7 GREEN / 0 RED / 0 TODO  (of 7)\n  RESULT: GREEN (exit 0)",
+  "exitCode": 0
+}

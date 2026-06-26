@@ -22,8 +22,8 @@ GATES=(
   "gate3_roundtrip.sh|③ sync_retain -> recall roundtrip"
   "gate4_isolation.sh|④ tenant isolation + team-retain attribution"
   "gate5_adversarial.sh|⑤ adversarial inputs rejected"
+  "gate_contract_drift.sh|✦ contract-drift probe (live contract)"
   "gate6_restore.sh|⑥ backup restore-test"
-  "gate_contract_drift.sh|✦ contract-drift probe (mock<->real)"
 )
 
 declare -i fail=0 notimpl=0 pass=0

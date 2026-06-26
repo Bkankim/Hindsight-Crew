@@ -1,0 +1,13 @@
+
+=== Hindsight-Crew verify-all ===
+  GREEN  ① 8888 health (gateway front)
+  GREEN  ② personal/team bank provisioned
+  GREEN  ③ sync_retain -> recall roundtrip
+  GREEN  ④ tenant isolation + team-retain attribution
+  GREEN  ⑤ adversarial inputs rejected
+  GREEN  ✦ contract-drift probe (live contract)
+  GREEN  ⑥ backup restore-test
+
+  summary: 7 GREEN / 0 RED / 0 TODO  (of 7)
+  RESULT: GREEN (exit 0)
+

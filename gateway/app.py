@@ -141,4 +141,67 @@ def create_app(
         media = up_resp.headers.get("content-type", "application/json")
         return Response(content=up_resp.content, status_code=up_resp.status_code, media_type=media)
 
+    # ---- REST surface proxy (/v1/{tenant}/banks/{bank}/...) ----
+    # The Hindsight REST API carries the bank in the PATH. The gateway enforces the same
+    # deny-by-default bank ACL, blocks the bank-collection (enumeration) endpoint, restricts
+    # destructive DELETE to the owner's personal bank, and injects team-retain attribution.
+    @app.api_route("/v1/{tenant}/banks", methods=["GET", "POST"])
+    async def rest_collection_blocked(tenant: str, request: Request):
+        token = _bearer(request)
+        p = acl.principal_for(token)
+        audit.record(token=token, identity=(p.identity if p else None), method=request.method,
+                     tool="banks-collection", attempted_bank=None, resolved_bank=None,
+                     decision="deny", reason="bank-collection-blocked")
+        return JSONResponse({"error": "bank collection endpoint disabled"}, status_code=403)
+
+    @app.api_route("/v1/{tenant}/banks/{bank}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+    @app.api_route("/v1/{tenant}/banks/{bank}/{rest:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+    async def rest_proxy(tenant: str, bank: str, request: Request, rest: str = ""):
+        token = _bearer(request)
+        principal = acl.principal_for(token)
+        rpath = request.url.path
+
+        def deny(reason: str, code: int = 403):
+            audit.record(token=token, identity=(principal.identity if principal else None),
+                         method=request.method, tool=rpath, attempted_bank=bank,
+                         resolved_bank=None, decision="deny", reason=reason)
+            return JSONResponse({"error": "forbidden", "reason": reason}, status_code=code)
+
+        if principal is None:
+            return deny("unknown-or-missing-token")
+        if not _BANK_RE.match(bank or ""):
+            return deny("bad-bank-format")
+        if bank not in principal.allowed_banks():
+            return deny(f"bank-not-in-acl:{bank}")
+        # destructive bank delete only on the owner's personal bank
+        if request.method == "DELETE" and rest == "" and bank != principal.personal:
+            return deny("destructive-delete-on-nonpersonal")
+
+        body = await request.body()
+        # team-retain attribution: stamp member identity into each item's metadata (overwrite)
+        if (request.method == "POST" and rest == "memories" and attribution_enabled
+                and principal.is_team_bank(bank) and body):
+            try:
+                payload = json.loads(body)
+                items = payload.get("items")
+                if isinstance(items, list):
+                    for it in items:
+                        if isinstance(it, dict):
+                            md = dict(it.get("metadata") or {})
+                            md[policy.ATTRIBUTION_KEY] = principal.identity
+                            it["metadata"] = md
+                    body = json.dumps(payload).encode("utf-8")
+            except json.JSONDecodeError:
+                pass
+
+        audit.record(token=token, identity=principal.identity, method=request.method, tool=rpath,
+                     attempted_bank=bank, resolved_bank=bank, decision="allow", reason="rest-allow")
+        fwd = {k: v for k, v in request.headers.items() if k.lower() in policy.FORWARD_HEADER_ALLOWLIST}
+        if upstream_key:
+            fwd["authorization"] = f"Bearer {upstream_key}"
+        up = client.build_request(request.method, rpath, content=(body or None),
+                                  headers=fwd, params=dict(request.query_params))
+        up_resp = await client.send(up)
+        return Response(content=up_resp.content, status_code=up_resp.status_code,
+                        media_type=up_resp.headers.get("content-type", "application/json"))
     return app

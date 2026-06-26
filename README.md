@@ -33,9 +33,9 @@ cp .env.example .env.local   # optional; bootstrap auto-seeds demo secrets if ab
 
 > Minimum numbers are **measured** at Stage 2 by `bootstrap` (observed RAM/disk), not guessed. Placeholders below until measured.
 
-- **Minimum — `cpu-en` profile (the only v1-fully-verified path):** any Docker host. ~2 vCPU / ~4 GB RAM / ~8 GB disk *(to be confirmed by measurement)*. This is what "runs anywhere" rests on.
+- **Minimum — `cpu-en` profile (the only v1-fully-verified path):** any Docker host. **Measured footprint:** runtime ~0.85 GB RAM (hindsight ~811 MB + gateway ~38 MB RSS), ~7 GB disk (images ~6.8 GB + volumes ~0.37 GB), ~2 vCPU. Runs on a **2 GB** Docker VM. Note: the DR `restore-test` boots a throwaway instance, so on hosts with < ~3 GB free it stops the main stack first to avoid OOM (auto-handled).
 - **Recommended — `ko-full` / `gpu` profiles _(opt-in, NOT v1-verified)_:** Korean full models (`bge-m3` ~2.3 GB + reranker) want ~8–16 GB RAM; `gpu` needs a CUDA GPU + TEI.
-- **Tested on (reference, not a minimum):** _to be filled with the maintainer's environment as an example, e.g. macOS Apple Silicon / Linux WSL2 16 GB._
+- **Tested on (reference, not a minimum):** macOS (Apple Silicon) via Docker Desktop with a **~2 GB** Docker VM; Hindsight `v0.8.3`, `cpu-en` offline profile (`LLM_PROVIDER=none`). All 7 `verify-all` gates GREEN.
 
 ## Threat model
 

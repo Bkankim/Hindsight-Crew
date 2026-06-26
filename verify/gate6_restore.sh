@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# gate6_restore.sh — Gate 6: backup -> empty-stack restore -> retain/recall works
-# Implemented in Stage 4. Until then returns NOT_IMPLEMENTED (2) so verify-all reports TODO/RED.
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-. "$HERE/lib.sh"
-hc_log "Gate 6: backup -> empty-stack restore -> retain/recall works — pending (Stage 4)"
-exit $HC_GATE_NOTIMPL
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
+F=$(bash "$ROOT/scripts/backup.sh" 2>/tmp/hc-bk.err) || { hc_log "backup failed: $(tail -1 /tmp/hc-bk.err)"; exit 1; }
+hc_log "backup: $(tail -1 /tmp/hc-bk.err)"
+bash "$ROOT/scripts/restore-test.sh" "$F" >/tmp/hc-rt.out 2>&1 && { hc_log "$(tail -1 /tmp/hc-rt.out)"; exit 0; }
+hc_log "restore-test failed: $(tail -1 /tmp/hc-rt.out)"; exit 1

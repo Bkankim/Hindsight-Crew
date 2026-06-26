@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# gate5_adversarial.sh — Gate 5: unknown/ACL-less token, traversal, header+body bank smuggling, attribution forgery rejected
-# Implemented in Stage 1/3. Until then returns NOT_IMPLEMENTED (2) so verify-all reports TODO/RED.
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-. "$HERE/lib.sh"
-hc_log "Gate 5: unknown/ACL-less token, traversal, header+body bank smuggling, attribution forgery rejected — pending (Stage 1/3)"
-exit $HC_GATE_NOTIMPL
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
+A="$HC_DEMO_TOKEN_ALICE"; bad=0
+chk(){ [ "$3" = "$2" ] || { hc_log "FAIL $1: expected $2 got $3"; bad=$((bad+1)); }; }
+chk no-token       403 "$(rest_code POST ""        "$(hc_bank_path personal-alice)/memories/recall" '{"query":"x"}')"
+chk unknown-token  403 "$(rest_code POST "nope-tok" "$(hc_bank_path personal-alice)/memories/recall" '{"query":"x"}')"
+chk cross-tenant   403 "$(rest_code POST "$A"      "$(hc_bank_path personal-bob)/memories/recall" '{"query":"x"}')"
+chk bank-collection 403 "$(rest_code GET "$A" "/v1/$HC_TENANT/banks")"
+chk traversal-bank 403 "$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 -X POST "$HC_GW/v1/$HC_TENANT/banks/%2e%2e/memories/recall" -H "authorization: Bearer $A" -H 'content-type: application/json' -d '{}')"
+[ "$bad" = "0" ] && { hc_log "all adversarial inputs rejected"; exit 0; }
+hc_log "$bad adversarial checks failed"; exit 1
