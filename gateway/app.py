@@ -118,16 +118,21 @@ def create_app(
         out_payload = batch if isinstance(payload, list) else batch[0]
         body_bytes = json.dumps(out_payload).encode("utf-8")  # canonical re-serialization
 
-        # Header allowlist + inject upstream key (client token never forwarded).
+        # Header allowlist (drops client X-Bank-Id etc.) + inject upstream key.
+        # Verified contract (hindsight v0.8.3): MCP is mounted at /mcp and resolves the bank
+        # from the X-Bank-Id HEADER. So the gateway pins the bank by SETTING X-Bank-Id to the
+        # ACL-resolved bank (never trusting the client's X-Bank-Id, which the allowlist drops),
+        # and forwards to upstream /mcp. Body arguments.bank is also stripped (defense-in-depth).
         fwd_headers = {
             k: v for k, v in request.headers.items()
             if k.lower() in policy.FORWARD_HEADER_ALLOWLIST
         }
         fwd_headers["content-type"] = "application/json"
+        fwd_headers["x-bank-id"] = bank                 # authoritative bank pin
         if upstream_key:
             fwd_headers["authorization"] = f"Bearer {upstream_key}"
 
-        up_req = client.build_request("POST", f"/mcp/{bank}/", content=body_bytes, headers=fwd_headers)
+        up_req = client.build_request("POST", "/mcp", content=body_bytes, headers=fwd_headers)
         # MCP tools/call returns a single (possibly SSE-framed) response then closes, so we
         # read it fully and pass the bytes + content-type through. SSE framing (data: lines)
         # is preserved verbatim for the client to parse; incremental push-streaming is a

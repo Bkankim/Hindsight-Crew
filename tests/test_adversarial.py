@@ -49,7 +49,9 @@ def test_body_arguments_bank_smuggling_stripped(client, recorder, tool):
     # all client bank hints must be stripped before forwarding
     assert "bank" not in args
     assert "bank_id" not in args
-    assert recorder.last["path"] == f"/mcp/{bank}/"  # never the smuggled bank
+    # bank pinned via header to the ACL bank; smuggled body/header values never win
+    assert recorder.last["headers"]["x-bank-id"] == bank
+    assert recorder.last["path"] == "/mcp"
 
 
 def test_batch_with_one_denied_rejects_whole(client, recorder):

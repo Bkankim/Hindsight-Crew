@@ -8,7 +8,8 @@ def test_allowed_recall_forwards_pinned_path_and_injects_key(client, recorder):
     r = call(client, "personal-alice", "tok-alice", name="recall", arguments={"query": "x"})
     assert r.status_code == 200
     fwd = recorder.last
-    assert fwd["path"] == "/mcp/personal-alice/"                  # path-pinned
+    assert fwd["path"] == "/mcp"                                  # forwarded to upstream /mcp
+    assert fwd["headers"]["x-bank-id"] == "personal-alice"        # bank pinned via header
     assert fwd["headers"]["authorization"] == f"Bearer {UPSTREAM_KEY}"  # upstream key injected
     # client token must NOT appear anywhere in forwarded headers
     assert "tok-alice" not in json.dumps(fwd["headers"])
@@ -17,7 +18,8 @@ def test_allowed_recall_forwards_pinned_path_and_injects_key(client, recorder):
 def test_team_recall_allowed(client, recorder):
     r = call(client, "team-eng", "tok-alice", name="recall", arguments={"query": "x"})
     assert r.status_code == 200
-    assert recorder.last["path"] == "/mcp/team-eng/"
+    assert recorder.last["path"] == "/mcp"
+    assert recorder.last["headers"]["x-bank-id"] == "team-eng"
 
 
 def test_batch_all_allowed_forwards_list(client, recorder):
@@ -39,7 +41,8 @@ def test_root_multibank_blocked(client, recorder):
 def test_destructive_on_own_personal_allowed(client, recorder):
     r = call(client, "personal-alice", "tok-alice", name="delete_bank", arguments={})
     assert r.status_code == 200
-    assert recorder.last["path"] == "/mcp/personal-alice/"
+    assert recorder.last["path"] == "/mcp"
+    assert recorder.last["headers"]["x-bank-id"] == "personal-alice"
 
 
 def test_destructive_on_team_denied(client, recorder):
@@ -58,5 +61,6 @@ def test_xbankid_header_not_forwarded(client, recorder):
     r = call(client, "personal-alice", "tok-alice", name="recall", arguments={"query": "x"},
              headers={"x-bank-id": "team-eng"})
     assert r.status_code == 200
-    assert "x-bank-id" not in recorder.last["headers"]   # stripped by allowlist
-    assert recorder.last["path"] == "/mcp/personal-alice/"  # path bank wins, header ignored
+    # gateway OVERWRITES x-bank-id with the ACL-resolved bank; client's value never wins
+    assert recorder.last["headers"]["x-bank-id"] == "personal-alice"
+    assert recorder.last["path"] == "/mcp"
