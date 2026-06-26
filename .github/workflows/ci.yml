@@ -1,0 +1,13 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  gateway-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r gateway/requirements.txt pytest
+      - run: python -m pytest -q
+        # NOTE: the live 7-gate verify-all needs the dockerized Hindsight stack (./bootstrap),
+        # which is run locally/self-hosted, not in this hosted-runner unit job.

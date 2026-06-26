@@ -16,6 +16,7 @@ Hindsight's built-in auth is a single shared key; it has **no identity→bank en
 cp .env.example .env.local   # optional; bootstrap auto-seeds demo secrets if absent
 ./bootstrap                  # auto-detect profile -> seed -> compose up -> verify-all -> exit code
 ```
+
 `./bootstrap` is green **iff** `verify/verify-all.sh` exits `0` (6 gates + drift probe).
 
 ## Acceptance gates (`verify/verify-all.sh`)
