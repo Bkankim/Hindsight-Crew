@@ -9,9 +9,10 @@ package is "done" when `verify/verify-all.sh` exits `0`.
 - **VERIFY:** all present.
 
 ## Phase 1 — clone & configure
-- **GREEN:** `git clone <repo> && cd Hindsight-Crew`. Optionally `cp .env.example .env.local` and set
-  `HC_HINDSIGHT_IMAGE` / `HC_POSTGRES_IMAGE` to real `@sha256` digests. If omitted, `bootstrap`
-  seeds demo secrets and uses the committed default digests.
+- **GREEN:** `git clone <repo> && cd Hindsight-Crew`. Optionally `cp .env.example .env.local` and pin
+  `HC_HINDSIGHT_IMAGE` to a real `@sha256` digest for reproducible/non-demo use. If omitted, `bootstrap`
+  seeds demo secrets and uses the floating `:latest` tag (pin a digest for production). Hindsight bundles
+  an embedded Postgres (pg0) — there is no separate Postgres service to configure.
 - **VERIFY:** `scripts/secret-hygiene.sh` clean.
 
 ## Phase 2 — unattended bootstrap
