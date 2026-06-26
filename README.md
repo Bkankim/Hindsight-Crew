@@ -57,7 +57,7 @@ auto-capture rules · daily-report · Korean/GPU auto-verification · offsite ba
 gateway/   body-aware deny-by-default MCP policy gateway (app/policy/acl/audit)
 verify/    verify-all.sh + gate1..6 + contract-drift + lib
 scripts/   bootstrap helpers: contract-probe, seed-demo, backup, restore-test, secret-hygiene
-profiles/  cpu-en (verified) / ko-full / gpu (opt-in)
+profiles/  ko-full (default, Korean) / cpu-en (CI-verified light fallback) / gpu (opt-in)
 tests/     gateway unit + adversarial + attribution (probe-generated mocks)
 docs/      RUNBOOK · THREAT-MODEL · deploy-systemd
 ```

@@ -16,7 +16,7 @@ package is "done" when `verify/verify-all.sh` exits `0`.
 - **VERIFY:** `scripts/secret-hygiene.sh` clean.
 
 ## Phase 2 — unattended bootstrap
-- **GREEN:** `./bootstrap` — detects profile (default `cpu-en`; `--korean` / `--gpu` opt-in),
+- **GREEN:** `./bootstrap` — detects profile (default `ko-full` Korean; `--cpu-en` light/CI fallback, `--gpu` opt-in),
   seeds upstream key + 2 demo member tokens + a team-bank ACL if `.env.local` absent,
   `docker compose up -d`, then runs `verify/verify-all.sh`.
 - **VERIFY:** exit code `0`; `bootstrap` prints observed RAM/disk (feeds README Minimum).

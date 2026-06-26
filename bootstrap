@@ -2,9 +2,9 @@
 # bootstrap — the unattended single entrypoint. Detects the profile, seeds demo
 # secrets/ACL if absent, builds + starts the stack, waits for health, runs verify-all,
 # and prints the OBSERVED resource footprint (feeds README "Minimum"). Exit code == verify-all.
-#   ./bootstrap            # cpu-en (v1-verified, offline)
-#   ./bootstrap --korean   # ko-full (opt-in, unverified)
-#   ./bootstrap --gpu      # gpu (opt-in, unverified)
+#   ./bootstrap            # ko-full (Korean, DEFAULT; needs ~4GB+ RAM, locked at boot-0)
+#   ./bootstrap --cpu-en   # cpu-en (lightweight English ~217MB; CI/constrained-host fallback)
+#   ./bootstrap --gpu      # gpu (Korean via TEI; needs CUDA GPU)
 set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"; cd "$ROOT"
 
