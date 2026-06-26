@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # restore-test.sh — prove a backup actually restores: extract pg0 into a throwaway volume,
-# boot a throwaway hindsight on it (sharing the model cache for speed), and recall a memory
-# that existed before the backup. Success = data survived AND the app works on restored data.
+# boot a throwaway hindsight on it (sharing the model cache for speed), and recall the DR
+# marker that gate6 seeded before the backup. Success = data survived AND the app works on it.
+# The marker text is passed via HC_RESTORE_MARKER (gate6 sets it; falls back for manual runs).
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"; cd "$ROOT"
 [ -f .env.local ] && { set -a; . ./.env.local; set +a; }
@@ -31,7 +32,8 @@ for i in $(seq 1 50); do
   [ "$c" = "200" ] && { ok=1; break; }; sleep 3
 done
 [ "$ok" = "1" ] || { echo "restored stack not healthy"; docker logs "$RC" 2>&1 | tail -8; exit 1; }
+MARK="${HC_RESTORE_MARKER:-release freeze}"
 body=$(curl -s --max-time 25 -X POST "http://127.0.0.1:$PORT/v1/default/banks/team-eng/memories/recall" \
-  -H "authorization: Bearer $KEY" -H 'content-type: application/json' -d '{"query":"release freeze"}')
-echo "$body" | grep -qi "release freeze" && { echo "restore-test ok: data survived + recall works on restored stack"; exit 0; }
+  -H "authorization: Bearer $KEY" -H 'content-type: application/json' -d "{\"query\":\"$MARK\"}")
+echo "$body" | grep -qi "$MARK" && { echo "restore-test ok: data survived + recall works on restored stack"; exit 0; }
 echo "restore-test FAIL: marker not recalled: $(echo "$body" | head -c 160)"; exit 1

@@ -32,12 +32,12 @@ cp .env.example .env.local   # optional; bootstrap auto-seeds demo secrets if ab
 
 ## System Requirements
 
-> Minimum numbers are **measured** at Stage 2 by `bootstrap` (observed RAM/disk), not guessed. Placeholders below until measured.
+> Minimum numbers below are **measured** on the live stack by `bootstrap` / `verify-all` (observed RAM/disk), not guessed.
 
-- **Default — `ko-full` profile (Korean, RECOMMENDED for the target use case):** `BAAI/bge-m3` (~2.3 GB) + `dragonkue/bge-reranker-v2-m3-ko`, offline `LLM=none`. Needs **~4 GB+ RAM**. **Pick this at boot-0** — the embedding model IS the vector dimension, so switching profiles after data is loaded forces a full reindex/wipe.
+- **Default — `ko-full` profile (Korean, RECOMMENDED for the target use case):** `BAAI/bge-m3` (1024-dim) + `BAAI/bge-reranker-v2-m3` (official multilingual 568M; `dragonkue/bge-reranker-v2-m3-ko` is an optional Korean-tuned hot-swap — rerankers are **not** dimension-locked, swap anytime). Offline `LLM=none`. **Measured:** runtime ~1.5–2.1 GB RAM (hindsight) + ~59 MB (gateway), ~14 GB disk (images ~6.8 GB + volumes ~7.2 GB incl. Korean models ~5 GB); needs **~4 GB+ RAM**. **Pick this at boot-0** — the embedding model IS the vector dimension, so switching profiles after data is loaded forces a full reindex/wipe.
 - **Lightweight fallback — `cpu-en` (`./bootstrap --cpu-en`):** English `bge-small-en-v1.5` + `ms-marco-MiniLM` (~217 MB). **Measured:** runtime ~0.85 GB RAM, ~7 GB disk, runs on a **2 GB** Docker VM; this is the **CI-verified** profile (verify-all 7/7 GREEN). Use for CI / constrained hosts / English corpora.
 - **`gpu` profile _(opt-in)_:** Korean models via TEI; needs a CUDA GPU.
-- **Tested on (reference):** macOS (Apple Silicon), Docker Desktop **~2 GB** VM, Hindsight `v0.8.3`, **`cpu-en`** offline profile — all 7 `verify-all` gates GREEN. The default **`ko-full`** path needs ~4 GB+ and was **NOT live-verified in this 2 GB environment** (bge-m3 OOMs it); run it boot-0 on an adequately-sized host to verify. cpu-en is the only profile measured live here.
+- **Tested on (reference):** **`ko-full`** live-verified — `verify-all` **7/7 GREEN** on Colima (Apple Silicon, 6 vCPU / 10 GiB), Hindsight `v0.8.3`, `bge-m3` (1024-dim) + `bge-reranker-v2-m3`, fully offline (`LLM=none`); Korean semantic recall confirmed (lexically-different KO queries resolved to the right memory). **`cpu-en`** verified on a **2 GB** VM (the lightweight CI profile).
 
 ## Threat model
 
