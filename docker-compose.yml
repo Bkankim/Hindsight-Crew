@@ -12,14 +12,14 @@ services:
     environment:
       # MCP Bearer auth — the gateway holds this same value; clients never get it.
       HINDSIGHT_API_MCP_AUTH_TOKEN: ${HC_HINDSIGHT_API_KEY:?set HC_HINDSIGHT_API_KEY (bootstrap seeds it)}
-      # LLM for fact-extraction. cpu-en/offline path uses "none" (raw store + semantic recall,
-      # no external cloud, no extra model). ko-full/gpu can switch to ollama/llamacpp.
+      # LLM for fact-extraction stays "none" on all profiles (raw store + semantic recall, fully offline).
+      # Default profile is ko-full (Korean); --cpu-en is the lightweight English CI/constrained-host fallback.
       HINDSIGHT_API_LLM_PROVIDER: ${HINDSIGHT_API_LLM_PROVIDER:-none}
       # Embeddings + reranker from the selected profile (local provider on cpu-en).
       HINDSIGHT_API_EMBEDDINGS_PROVIDER: ${HINDSIGHT_API_EMBEDDINGS_PROVIDER:-local}
-      HINDSIGHT_API_EMBEDDINGS_MODEL: ${HINDSIGHT_API_EMBEDDINGS_MODEL:-BAAI/bge-small-en-v1.5}
+      HINDSIGHT_API_EMBEDDINGS_MODEL: ${HINDSIGHT_API_EMBEDDINGS_MODEL:-BAAI/bge-m3}
       HINDSIGHT_API_RERANKER_PROVIDER: ${HINDSIGHT_API_RERANKER_PROVIDER:-local}
-      HINDSIGHT_API_RERANKER_MODEL: ${HINDSIGHT_API_RERANKER_MODEL:-cross-encoder/ms-marco-MiniLM-L-6-v2}
+      HINDSIGHT_API_RERANKER_MODEL: ${HINDSIGHT_API_RERANKER_MODEL:-dragonkue/bge-reranker-v2-m3-ko}
     expose: ["8888"]               # internal only — NOT published to host
     volumes:
       - pg0:/home/hindsight/.pg0   # embedded Postgres data (named volume, UID-1000 safe)

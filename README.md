@@ -14,7 +14,7 @@ Hindsight's built-in auth is a single shared key; it has **no identity→bank en
 
 ```sh
 cp .env.example .env.local   # optional; bootstrap auto-seeds demo secrets if absent
-./bootstrap                  # auto-detect profile -> seed -> compose up -> verify-all -> exit code
+./bootstrap                  # default ko-full (Korean, needs ~4GB+); or ./bootstrap --cpu-en (light/2GB/CI)
 ```
 
 `./bootstrap` is green **iff** `verify/verify-all.sh` exits `0` (6 gates + drift probe).
@@ -34,9 +34,10 @@ cp .env.example .env.local   # optional; bootstrap auto-seeds demo secrets if ab
 
 > Minimum numbers are **measured** at Stage 2 by `bootstrap` (observed RAM/disk), not guessed. Placeholders below until measured.
 
-- **Minimum — `cpu-en` profile (the only v1-fully-verified path):** any Docker host. **Measured footprint:** runtime ~0.85 GB RAM (hindsight ~811 MB + gateway ~38 MB RSS), ~7 GB disk (images ~6.8 GB + volumes ~0.37 GB), ~2 vCPU. Runs on a **2 GB** Docker VM. Note: the DR `restore-test` boots a throwaway instance, so on hosts with < ~3 GB free it stops the main stack first to avoid OOM (auto-handled).
-- **Recommended — `ko-full` / `gpu` profiles _(opt-in, NOT v1-verified)_:** Korean full models (`bge-m3` ~2.3 GB + reranker) want ~8–16 GB RAM; `gpu` needs a CUDA GPU + TEI.
-- **Tested on (reference, not a minimum):** macOS (Apple Silicon) via Docker Desktop with a **~2 GB** Docker VM; Hindsight `v0.8.3`, `cpu-en` offline profile (`LLM_PROVIDER=none`). All 7 `verify-all` gates GREEN.
+- **Default — `ko-full` profile (Korean, RECOMMENDED for the target use case):** `BAAI/bge-m3` (~2.3 GB) + `dragonkue/bge-reranker-v2-m3-ko`, offline `LLM=none`. Needs **~4 GB+ RAM**. **Pick this at boot-0** — the embedding model IS the vector dimension, so switching profiles after data is loaded forces a full reindex/wipe.
+- **Lightweight fallback — `cpu-en` (`./bootstrap --cpu-en`):** English `bge-small-en-v1.5` + `ms-marco-MiniLM` (~217 MB). **Measured:** runtime ~0.85 GB RAM, ~7 GB disk, runs on a **2 GB** Docker VM; this is the **CI-verified** profile (verify-all 7/7 GREEN). Use for CI / constrained hosts / English corpora.
+- **`gpu` profile _(opt-in)_:** Korean models via TEI; needs a CUDA GPU.
+- **Tested on (reference):** macOS (Apple Silicon), Docker Desktop **~2 GB** VM, Hindsight `v0.8.3`, **`cpu-en`** offline profile — all 7 `verify-all` gates GREEN. The default **`ko-full`** path needs ~4 GB+ and was **NOT live-verified in this 2 GB environment** (bge-m3 OOMs it); run it boot-0 on an adequately-sized host to verify. cpu-en is the only profile measured live here.
 
 ## Threat model
 

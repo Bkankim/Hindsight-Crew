@@ -11,7 +11,7 @@ rand() { openssl rand -hex "${1:-24}"; }   # CSPRNG
 
 if [ ! -f .env.local ]; then
   KEY="hs_$(rand 24)"
-  PROFILE="${HC_PROFILE:-cpu-en}"
+  PROFILE="${HC_PROFILE:-ko-full}"
   {
     echo "# AUTO-SEEDED by seed-demo.sh — DO NOT COMMIT (gitignored)"
     echo "HC_PROFILE=$PROFILE"
