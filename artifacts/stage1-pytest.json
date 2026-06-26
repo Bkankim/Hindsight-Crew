@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "python",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "recordedStdout": "..........................                                               [100%]",
+  "exitCode": 0
+}
